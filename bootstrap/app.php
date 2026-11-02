@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state', 'currency']);
         // Signed by MonoPay and Raptor Panel, not by a browser.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
+        // The progress of an update is followed while the rest of the site is in maintenance.
+        $middleware->preventRequestsDuringMaintenance(except: ['admin/updates/status']);
 
         $middleware->web(append: [
             HandleAppearance::class,

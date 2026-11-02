@@ -4,11 +4,13 @@ namespace Database\Seeders;
 
 use App\Billing\Invoices;
 use App\Billing\Wallet;
+use App\Models\ActivityLog;
 use App\Models\Card;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\PromoCode;
 use App\Models\Service;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -62,6 +64,20 @@ class DemoSeeder extends Seeder
                 $svc->forceFill(['last_error' => 'No node with 8192 MB free memory in locations 1, 2.'])->save();
             }
         }
+        // A month of payments for the revenue chart, growing a little towards today.
+        $users = User::query()->where('is_admin', false)->pluck('id');
+        foreach (range(29, 0) as $day) {
+            foreach (range(1, rand(0, 3) + (30 - $day > 20 ? 1 : 0)) as $n) {
+                $p = Payment::query()->create(['user_id' => $users->random(), 'provider' => 'monopay', 'provider_id' => 'demo-'.Str::random(12), 'method' => rand(0, 3) ? 'page' : 'card', 'status' => 'success', 'currency' => 'UAH', 'amount' => [4900, 9900, 18900, 34900, 22900, 53900][rand(0, 5)]]);
+                $p->forceFill(['created_at' => now()->subDays($day)->setTime(rand(8, 23), rand(0, 59)), 'credited' => true])->save();
+            }
+        }
+        foreach ([[$client, 'auth.login', 'Вхід у кабінет', 0], [$client, 'order.placed', 'Замовлення CS2 «CS2 Retake», рахунок HMC-2026-000003', 0], [$client, 'payment.received', 'Оплата 1 200,00 ₴ через plata by mono', 40], [$client, 'service.ready', 'Сервер «Survival SMP» створено в панелі', 30]] as [$u, $event, $text, $days]) {
+            ActivityLog::query()->create(['user_id' => $u->id, 'actor_id' => str_starts_with($event, 'service') ? null : $u->id, 'event' => $event, 'description' => $text, 'ip' => '93.170.12.'.rand(2, 250), 'created_at' => now()->subDays($days)->subMinutes(rand(1, 600))]);
+        }
+        ActivityLog::query()->create(['user_id' => $client->id, 'actor_id' => $admin->id, 'event' => 'admin.balance', 'description' => 'Баланс змінено на 100 UAH: компенсація за роботи на вузлі', 'ip' => '10.0.0.5', 'created_at' => now()->subDays(3)]);
+        Setting::put(['announcement' => 'Знижка 20% на річні тарифи до кінця листопада — промокод LAUNCH', 'announcement_tone' => 'success']);
+
         Payment::query()->create(['user_id' => $client->id, 'provider' => 'monopay', 'provider_id' => 'demo-failed', 'method' => 'card', 'status' => 'failure', 'currency' => 'UAH', 'amount' => 18900, 'failure_reason' => 'Недостатньо коштів']);
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Billing\Activity;
 use App\Billing\PanelClient;
 use App\Billing\Present;
 use App\Billing\Provisioner;
@@ -55,6 +56,8 @@ class ServiceController extends Controller
         } catch (\Throwable $exception) {
             return back()->with('error', PanelClient::error($exception));
         }
+
+        Activity::log('admin.service.'.$action, 'Сервер «'.$service->name.'»: '.['provision' => 'створення в панелі', 'suspend' => 'призупинено', 'unsuspend' => 'відновлено', 'terminate' => 'видалено', 'sync' => 'синхронізовано'][$action], $service->user_id);
 
         return back()->with('success', 'Готово.');
     }

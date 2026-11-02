@@ -1,0 +1,62 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build
+        run: |
+          composer install --no-interaction --prefer-dist
+          cp .env.example .env && php artisan key:generate
+          npm ci
+          npm run build
+
+      - name: Stamp the version
+        run: |
+          # "v0.2.0" and the typo "v.0.2.0" both become 0.2.0.
+          CLEAN="${GITHUB_REF_NAME#[vV]}"; CLEAN="${CLEAN#.}"
+          sed -i "s/'version' => 'canary'/'version' => '${CLEAN}'/" config/billing.php
+          grep -q "'version' => '${CLEAN}'" config/billing.php
+
+      - name: Package
+        run: |
+          rm -rf vendor node_modules tests .env .git .github public/hot bootstrap/cache/*.php
+          tar -czf ../billing.tar.gz .
+          mv ../billing.tar.gz .
+          # Verified by the built-in updater and the installer before anything is unpacked.
+          sha256sum billing.tar.gz > billing.tar.gz.sha256
+
+      - name: Release notes
+        run: |
+          awk -v head="## ${GITHUB_REF_NAME}" '$0 == head || index($0, head " ") == 1 { found = 1; next } found && /^## / { exit } found' CHANGELOG.md > RELEASE_NOTES.md || true
+          [ -s RELEASE_NOTES.md ] || echo "Raptor Billing ${GITHUB_REF_NAME}" > RELEASE_NOTES.md
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            billing.tar.gz
+            billing.tar.gz.sha256

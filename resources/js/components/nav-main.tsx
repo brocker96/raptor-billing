@@ -3,6 +3,7 @@ import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
@@ -34,6 +35,17 @@ export function NavMain({
                                 <span>{item.title}</span>
                             </Link>
                         </SidebarMenuButton>
+                        {item.badge ? (
+                            <SidebarMenuBadge
+                                className={
+                                    item.badgeTone === 'amber'
+                                        ? 'bg-amber-500/15 text-amber-500'
+                                        : 'bg-primary/15 text-primary'
+                                }
+                            >
+                                {item.badge}
+                            </SidebarMenuBadge>
+                        ) : null}
                     </SidebarMenuItem>
                 ))}
             </SidebarMenu>

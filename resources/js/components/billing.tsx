@@ -139,7 +139,7 @@ export function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
                     <tr className="border-b">
                         <th className="px-5 py-3 font-medium">Клієнт</th>
                         <th className="px-5 py-3 font-medium">Рахунок</th>
-                        <th className="hidden px-5 py-3 font-medium md:table-cell">
+                        <th className="hidden px-5 py-3 font-medium 2xl:table-cell">
                             Спосіб
                         </th>
                         <th className="hidden px-5 py-3 font-medium md:table-cell">
@@ -179,13 +179,18 @@ export function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
                                         </span>
                                     )}
                                 </td>
-                                <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">
+                                <td className="hidden px-5 py-3 text-muted-foreground 2xl:table-cell">
                                     {p.method === 'card'
                                         ? 'Автооплата карткою'
                                         : 'Сторінка оплати'}
                                 </td>
-                                <td className="hidden px-5 py-3 text-muted-foreground md:table-cell">
-                                    {date(p.created_at, true)}
+                                <td className="hidden px-5 py-3 whitespace-nowrap text-muted-foreground md:table-cell">
+                                    {new Intl.DateTimeFormat('uk-UA', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }).format(new Date(p.created_at))}
                                 </td>
                                 <td className="px-5 py-3 text-right font-medium whitespace-nowrap">
                                     {p.amount.formatted}

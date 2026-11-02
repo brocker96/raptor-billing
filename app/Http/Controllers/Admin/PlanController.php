@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Billing\Activity;
 use App\Billing\Currency;
 use App\Billing\PanelClient;
 use App\Billing\Period;
+use App\Billing\PlanImporter;
 use App\Billing\Present;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
@@ -12,7 +14,6 @@ use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -39,12 +40,16 @@ class PlanController extends Controller
     {
         $this->save(new Plan, $this->validated($request));
 
+        Activity::log('admin.plan', 'Створено тариф '.$request->input('name'), null);
+
         return back()->with('success', 'Тариф створено.');
     }
 
     public function update(Request $request, Plan $plan): RedirectResponse
     {
         $this->save($plan, $this->validated($request, $plan));
+
+        Activity::log('admin.plan', 'Змінено тариф '.$plan->name, null);
 
         return back()->with('success', 'Тариф збережено.');
     }
@@ -64,34 +69,12 @@ class PlanController extends Controller
     /**
      * Creates hidden plans for panel packages that have none yet, prices are set afterwards.
      */
-    public function import(PanelClient $panel): RedirectResponse
+    public function import(PlanImporter $importer): RedirectResponse
     {
         try {
-            $packages = $panel->packages();
+            $added = $importer->import();
         } catch (\Throwable $exception) {
             return back()->with('error', PanelClient::error($exception));
-        }
-
-        $added = 0;
-        foreach ($packages as $package) {
-            if (Plan::query()->where('panel_package', $package['slug'])->exists()) {
-                continue;
-            }
-            Plan::query()->create([
-                'name' => $package['name'],
-                'slug' => Str::slug($package['slug']),
-                'description' => $package['description'] ?? null,
-                'features' => array_values(array_filter([
-                    ($package['limits']['memory'] ?? 0) ? round($package['limits']['memory'] / 1024, 1).' ГБ RAM' : null,
-                    ($package['limits']['disk'] ?? 0) ? round($package['limits']['disk'] / 1024).' ГБ SSD' : null,
-                    ($package['limits']['cpu'] ?? 0) ? $package['limits']['cpu'].'% CPU' : null,
-                    ($package['feature_limits']['backups'] ?? 0) ? $package['feature_limits']['backups'].' бекапів' : null,
-                ])),
-                'panel_package' => $package['slug'],
-                'active' => false,
-                'sort' => $package['sort'] ?? 0,
-            ]);
-            $added++;
         }
 
         return back()->with('success', $added ? "Імпортовано пакетів: $added. Задайте ціни та увімкніть тарифи." : 'Нових пакетів у панелі немає.');

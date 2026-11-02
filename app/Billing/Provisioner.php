@@ -42,6 +42,7 @@ class Provisioner
         ])->save();
 
         $user->notify(new ServiceReady($service));
+        Activity::log('service.ready', 'Сервер «'.$service->name.'» створено в панелі', $user);
     }
 
     public function suspend(Service $service, string $reason, ?string $paymentUrl): void
@@ -49,6 +50,7 @@ class Provisioner
         $this->panel->suspend($service->externalId(), $reason, $paymentUrl);
         $service->forceFill(['status' => 'suspended', 'suspended_at' => now()])->save();
         $service->user->notify(new ServiceSuspended($service, $reason, $paymentUrl));
+        Activity::log('service.suspended', 'Сервер «'.$service->name.'» призупинено: '.$reason, $service->user_id);
     }
 
     public function unsuspend(Service $service): void
@@ -66,6 +68,7 @@ class Provisioner
 
         if ($notify) {
             $service->user->notify(new ServiceTerminated($service));
+            Activity::log('service.terminated', 'Сервер «'.$service->name.'» видалено', $service->user_id);
         }
     }
 

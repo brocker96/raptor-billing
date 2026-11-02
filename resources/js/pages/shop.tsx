@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Announcement } from '@/components/announcement';
 import {
     Check,
     Cpu,
@@ -91,6 +92,9 @@ export default function Shop({
             <Head title="Ігрові сервери" />
             <div className="min-h-screen bg-background">
                 <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(60%_60%_at_50%_0%,color-mix(in_oklch,var(--primary)_22%,transparent),transparent)]" />
+                <div className="relative mx-auto max-w-6xl px-4 pt-4 empty:hidden">
+                    <Announcement />
+                </div>
                 <header className="relative mx-auto flex max-w-6xl items-center gap-4 px-4 py-5">
                     <Link href="/" className="flex items-center gap-2.5">
                         <img

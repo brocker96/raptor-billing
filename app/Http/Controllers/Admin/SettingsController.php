@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Billing\Activity;
 use App\Billing\Currency;
 use App\Billing\MonoPay;
 use App\Billing\PanelClient;
@@ -38,6 +39,8 @@ class SettingsController extends Controller
             'support_email' => 'nullable|email|max:191',
             'company_url' => 'nullable|url:https,http|max:191',
             'logo_url' => 'nullable|string|max:500',
+            'announcement' => 'nullable|string|max:500',
+            'announcement_tone' => 'required|in:info,warning,success',
             'currencies' => 'required|array|min:1',
             'currencies.*' => 'in:'.implode(',', Currency::codes()),
             'panel_url' => 'nullable|url:https,http|max:500',
@@ -58,6 +61,8 @@ class SettingsController extends Controller
             }
         }
         Setting::put(array_map(fn ($v) => $v ?? '', $data));
+
+        Activity::log('admin.settings', 'Змінено налаштування: '.implode(', ', array_keys($data)), null);
 
         return back()->with('success', 'Налаштування збережено.');
     }

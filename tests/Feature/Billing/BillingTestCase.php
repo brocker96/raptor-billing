@@ -62,6 +62,9 @@ abstract class BillingTestCase extends TestCase
 
                 return Http::response($request->method() === 'DELETE' ? '' : ['ok' => true], $request->method() === 'DELETE' ? 204 : 200);
             }
+            if (str_starts_with($url, 'https://api.github.com/')) {
+                return Http::response($this->githubReleases);
+            }
             if (str_contains($url, '/api/merchant/pubkey')) {
                 return Http::response(['key' => base64_encode($public)]);
             }
@@ -75,6 +78,9 @@ abstract class BillingTestCase extends TestCase
             return Http::response([], 404);
         });
     }
+
+    /** What the fake GitHub API answers for the releases list. */
+    protected array $githubReleases = [];
 
     protected function customer(array $attributes = []): User
     {

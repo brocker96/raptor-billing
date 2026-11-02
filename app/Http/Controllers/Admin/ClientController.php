@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Billing\Activity;
 use App\Billing\Invoices;
 use App\Billing\Present;
 use App\Billing\Wallet;
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +35,7 @@ class ClientController extends Controller
             'client' => Present::user($user),
             'services' => $user->services()->with(['plan', 'nextPlan'])->latest('id')->get()->map(fn ($s) => Present::service($s)),
             'invoices' => $user->invoices()->with('service')->latest('id')->limit(30)->get()->map(fn ($i) => Present::invoice($i)),
+            'activity' => ActivityLog::query()->with(['user', 'actor'])->where('user_id', $user->id)->latest('id')->limit(15)->get()->map(fn ($e) => ActivityController::present($e)),
             'transactions' => $user->transactions()->with('invoice')->latest('id')->limit(30)->get()->map(fn ($t) => Present::transaction($t)),
         ]);
     }
@@ -46,6 +49,8 @@ class ClientController extends Controller
         $wallet->change($user, (int) round($data['amount'] * 100), 'adjustment', $data['description'], ['admin_id' => $request->user()->id], true);
         $invoices->settleAll($user);
 
+        Activity::log('admin.balance', 'Баланс змінено на '.$data['amount'].' '.$user->currency.': '.$data['description'], $user);
+
         return back()->with('success', 'Баланс змінено.');
     }
 
@@ -54,6 +59,8 @@ class ClientController extends Controller
         $data = $request->validate(['is_admin' => 'boolean']);
         abort_if($user->is($request->user()) && isset($data['is_admin']) && ! $data['is_admin'], 422, 'Не можна зняти права адміністратора з себе.');
         $user->forceFill($data)->save();
+
+        Activity::log('admin.client', isset($data['is_admin']) ? ($data['is_admin'] ? 'Надано права адміністратора' : 'Знято права адміністратора') : 'Змінено дані клієнта', $user);
 
         return back()->with('success', 'Збережено.');
     }

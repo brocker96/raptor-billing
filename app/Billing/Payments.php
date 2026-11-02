@@ -121,6 +121,7 @@ class Payments
         $payment->refresh();
         if ($credited) {
             $payment->user->notify(new PaymentReceived($payment));
+            Activity::log('payment.received', 'Оплата '.Currency::from($payment->currency)->format($payment->amount).' через plata by mono', $payment->user_id);
             if ($payment->invoice) {
                 $this->invoices->settle($payment->invoice);
             }

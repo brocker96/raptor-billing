@@ -32,6 +32,13 @@ class Setting extends Model
         'suspend_after_days' => '1',
         'terminate_after_days' => '14',
         'invoice_prefix' => 'HMC',
+        'announcement' => '',
+        'announcement_tone' => 'info',
+        'update_channel' => 'stable',
+        'update_auto_check' => '1',
+        'update_auto_install' => '0',
+        'update_hour' => '4',
+        'update_notified' => '',
     ];
 
     public $timestamps = false;

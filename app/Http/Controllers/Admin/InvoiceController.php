@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Billing\Activity;
 use App\Billing\Invoices;
 use App\Billing\Present;
 use App\Billing\Wallet;
@@ -39,12 +40,16 @@ class InvoiceController extends Controller
         }
         $invoices->settle($invoice);
 
+        Activity::log('admin.invoice.paid', 'Рахунок '.$invoice->number.' позначено сплаченим', $invoice->user_id);
+
         return back()->with('success', 'Рахунок позначено як сплачений.');
     }
 
     public function cancel(Invoice $invoice, Invoices $invoices): RedirectResponse
     {
         $invoices->cancel($invoice);
+
+        Activity::log('admin.invoice.cancel', 'Рахунок '.$invoice->number.' скасовано', $invoice->user_id);
 
         return back()->with('success', 'Рахунок скасовано.');
     }

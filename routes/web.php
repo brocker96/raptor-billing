@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\Client;
 use App\Http\Controllers\Webhooks;
 use App\Http\Middleware\EnsureAdmin;
+use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Client\ShopController::class, 'index'])->name('shop');
@@ -20,11 +21,13 @@ Route::post('/webhooks/raptor', Webhooks\RaptorController::class)->name('webhook
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', Client\DashboardController::class)->name('dashboard');
 
-    Route::get('order/{plan:slug}', fn (\App\Models\Plan $plan) => redirect()->route('checkout', [$plan] + request()->query()))->name('order');
+    Route::get('order/{plan:slug}', fn (Plan $plan) => redirect()->route('checkout', [$plan] + request()->query()))->name('order');
     Route::post('order/{plan:slug}/quote', [Client\ShopController::class, 'quote'])->name('order.quote');
     Route::post('order/{plan:slug}', [Client\ShopController::class, 'place'])->middleware('throttle:10,1')->name('order.place');
 
     Route::get('services', [Client\ServiceController::class, 'index'])->name('services.index');
+    // Links from the panel carry the external id (svc-12).
+    Route::get('services/ext/{ref}', fn (string $ref) => redirect()->route('services.show', (int) preg_replace('/\D/', '', $ref)))->name('services.ext');
     Route::get('services/{service}', [Client\ServiceController::class, 'show'])->name('services.show');
     Route::patch('services/{service}', [Client\ServiceController::class, 'update'])->name('services.update');
     Route::post('services/{service}/panel', [Client\ServiceController::class, 'panel'])->middleware('throttle:20,1')->name('services.panel');
@@ -70,6 +73,16 @@ Route::middleware(['auth', 'verified', EnsureAdmin::class])->prefix('admin')->na
     Route::post('promo-codes', [Admin\PromoCodeController::class, 'store'])->name('promo.store');
     Route::put('promo-codes/{code}', [Admin\PromoCodeController::class, 'update'])->name('promo.update');
     Route::delete('promo-codes/{code}', [Admin\PromoCodeController::class, 'destroy'])->name('promo.destroy');
+
+    Route::get('activity', [Admin\ActivityController::class, 'index'])->name('activity');
+
+    Route::get('updates', [Admin\UpdateController::class, 'index'])->name('updates');
+    Route::get('updates/status', [Admin\UpdateController::class, 'status'])->name('updates.status');
+    Route::post('updates/check', [Admin\UpdateController::class, 'check'])->middleware('throttle:10,1')->name('updates.check');
+    Route::put('updates/settings', [Admin\UpdateController::class, 'settings'])->name('updates.settings');
+    Route::post('updates/install', [Admin\UpdateController::class, 'install'])->name('updates.install');
+    Route::post('updates/rollback', [Admin\UpdateController::class, 'rollback'])->name('updates.rollback');
+    Route::post('updates/cancel', [Admin\UpdateController::class, 'cancel'])->name('updates.cancel');
 
     Route::get('settings', [Admin\SettingsController::class, 'edit'])->name('settings');
     Route::put('settings', [Admin\SettingsController::class, 'update'])->name('settings.update');

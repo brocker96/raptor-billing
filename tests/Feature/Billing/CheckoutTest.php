@@ -3,6 +3,7 @@
 namespace Tests\Feature\Billing;
 
 use App\Jobs\ProvisionService;
+use App\Models\ActivityLog;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Service;
@@ -64,5 +65,21 @@ class CheckoutTest extends BillingTestCase
 
         $this->assertSame('active', Service::query()->sole()->status);
         $this->assertSame(30000, $user->fresh()->balance);
+    }
+
+    public function test_activity_is_logged_and_shown_to_admins(): void
+    {
+        Queue::fake([ProvisionService::class]);
+        Notification::fake();
+        $this->post('/checkout/mc-4gb', ['period' => 1, 'name' => 'Іван Петренко', 'phone' => '+380501234567', 'email' => 'ivan@example.com', 'terms' => true]);
+
+        $user = User::query()->where('email', 'ivan@example.com')->sole();
+        $events = ActivityLog::query()->where('user_id', $user->id)->pluck('event')->all();
+        $this->assertContains('account.created', $events);
+        $this->assertContains('order.placed', $events);
+
+        $admin = $this->customer(['is_admin' => true]);
+        $this->actingAs($admin)->get('/admin/activity?group=order')->assertOk()
+            ->assertInertia(fn ($page) => $page->component('admin/activity')->where('entries.total', 1));
     }
 }

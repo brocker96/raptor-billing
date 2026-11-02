@@ -1,3 +1,5 @@
+import { ActivityList } from '@/components/activity-list';
+import type { ActivityEntry } from '@/components/activity-list';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,11 +21,13 @@ export default function ShowClient({
     services,
     invoices,
     transactions,
+    activity,
 }: {
     client: Client;
     services: Service[];
     invoices: Invoice[];
     transactions: Transaction[];
+    activity: ActivityEntry[];
 }) {
     const adjust = useForm({ amount: '', description: '' });
 
@@ -228,6 +232,21 @@ export default function ShowClient({
                         </ul>
                     </Panel>
                 </div>
+
+                <Panel
+                    title="Журнал"
+                    flush
+                    actions={
+                        <a
+                            href={`/admin/activity?search=${encodeURIComponent(client.email)}`}
+                            className="text-sm text-primary hover:underline"
+                        >
+                            Усе
+                        </a>
+                    }
+                >
+                    <ActivityList entries={activity} showUser={false} />
+                </Panel>
             </div>
         </>
     );

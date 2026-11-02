@@ -11,6 +11,8 @@ const keys = [
     'company_name',
     'company_url',
     'logo_url',
+    'announcement',
+    'announcement_tone',
     'company_details',
     'support_email',
     'currencies',
@@ -36,7 +38,11 @@ export default function Settings({ values, currencies, webhooks }: Props) {
     );
     const set =
         (key: Exclude<(typeof keys)[number], 'currencies'>) =>
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+        (
+            e: React.ChangeEvent<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+            >,
+        ) =>
             form.setData(key, e.target.value);
     const err = (key: string) => (form.errors as Record<string, string>)[key];
 
@@ -157,6 +163,32 @@ export default function Settings({ values, currencies, webhooks }: Props) {
                                     )
                                 }
                             />
+                        </Field>
+                    </div>
+                </Panel>
+
+                <Panel
+                    title="Оголошення"
+                    description="Банер для всіх клієнтів у кабінеті та магазині: роботи на вузлі, акція, новина. Порожнє — нічого не показується."
+                >
+                    <div className="grid gap-4 sm:grid-cols-[1fr_200px]">
+                        <Field label="Текст" error={err('announcement')}>
+                            <Input
+                                placeholder="Знижка 20% на річні тарифи до кінця місяця!"
+                                value={form.data.announcement}
+                                onChange={set('announcement')}
+                            />
+                        </Field>
+                        <Field label="Колір" error={err('announcement_tone')}>
+                            <select
+                                className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                                value={form.data.announcement_tone}
+                                onChange={set('announcement_tone')}
+                            >
+                                <option value="info">Інформація</option>
+                                <option value="success">Акція</option>
+                                <option value="warning">Попередження</option>
+                            </select>
                         </Field>
                     </div>
                 </Panel>

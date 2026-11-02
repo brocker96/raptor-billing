@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Client;
 
+use App\Billing\Activity;
 use App\Billing\Invoices;
 use App\Billing\MonoPay;
 use App\Billing\Orders;
-use App\Billing\Payments;
 use App\Billing\PanelClient;
+use App\Billing\Payments;
 use App\Billing\Present;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
@@ -126,6 +127,7 @@ class CheckoutController extends Controller
             Auth::login($user, true);
             $request->session()->regenerate();
             $user->notify(new AccountCreated(Password::broker()->createToken($user)));
+            Activity::log('account.created', 'Акаунт створено під час оформлення замовлення', $user, $user);
         }
 
         if ($invoices->settle($invoice)) {

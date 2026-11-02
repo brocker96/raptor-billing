@@ -8,6 +8,8 @@ import {
     Receipt,
     Server,
     Settings2,
+    RefreshCcw,
+    ScrollText,
     ShoppingCart,
     Users,
     Wallet,
@@ -43,14 +45,26 @@ const admin: NavItem[] = [
     { title: 'Тарифи', href: '/admin/plans', icon: LayoutGrid },
     { title: 'Промокоди', href: '/admin/promo-codes', icon: BadgePercent },
     { title: 'Налаштування', href: '/admin/settings', icon: Settings2 },
+    { title: 'Журнал', href: '/admin/activity', icon: ScrollText },
+    { title: 'Оновлення', href: '/admin/updates', icon: RefreshCcw },
 ];
 
 export function AppSidebar() {
-    const page = usePage<{ auth: { user: { is_admin?: boolean } | null } }>();
+    const page = usePage<{
+        auth: { user: { is_admin?: boolean } | null };
+        badges?: Record<string, string | number | null>;
+    }>();
+    const badges = page.props.badges ?? {};
+    const tones: Record<string, 'green' | 'amber'> = {
+        '/invoices': 'amber',
+        '/admin/services': 'amber',
+    };
     const path = page.url.split('?')[0];
     const mark = (items: NavItem[]) =>
         items.map((item) => ({
             ...item,
+            badge: badges[item.href as string] ?? null,
+            badgeTone: tones[item.href as string] ?? 'green',
             // Sections stay highlighted on their detail pages, the overviews only on themselves.
             isActive: ['/', '/dashboard', '/admin'].includes(
                 item.href as string,

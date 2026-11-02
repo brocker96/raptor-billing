@@ -68,6 +68,8 @@ class Orders
 
             $quote['promo']?->increment('uses');
 
+            Activity::log('order.placed', 'Замовлення '.$plan->name.' «'.$name.'», рахунок '.$invoice->number, $user);
+
             return $invoice;
         });
     }
