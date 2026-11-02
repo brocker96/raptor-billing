@@ -30,17 +30,6 @@ class ShopController extends Controller
         ]);
     }
 
-    public function order(Request $request, Plan $plan): Response
-    {
-        abort_unless($plan->active, 404);
-        $currency = $request->user()->currency;
-
-        return Inertia::render('order', [
-            'plan' => Present::plan($plan->load('prices'), $currency),
-            'in_stock' => $this->inStock($plan),
-            'balance' => Present::money($request->user()->balance, $currency),
-        ]);
-    }
 
     /**
      * Price check for the order form, with the promo code applied.

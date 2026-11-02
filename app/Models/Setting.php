@@ -18,8 +18,10 @@ class Setting extends Model
     public const SECRETS = ['panel_key', 'panel_webhook_secret', 'monopay_token'];
 
     public const DEFAULTS = [
-        'company_name' => 'Raptor Hosting',
+        'company_name' => 'HostMC',
         'company_details' => '',
+        'company_url' => 'https://hostmc.net.ua',
+        'logo_url' => '',
         'support_email' => '',
         'currencies' => 'UAH',
         'panel_url' => '',
@@ -29,7 +31,7 @@ class Setting extends Model
         'invoice_days_before' => '5',
         'suspend_after_days' => '1',
         'terminate_after_days' => '14',
-        'invoice_prefix' => 'RB',
+        'invoice_prefix' => 'HMC',
     ];
 
     public $timestamps = false;

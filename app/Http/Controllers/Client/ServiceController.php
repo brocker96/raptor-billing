@@ -29,7 +29,7 @@ class ServiceController extends Controller
         $this->authorizeOwner($request, $service);
         $service->load(['plan', 'nextPlan']);
 
-        $plans = Plan::query()->with('prices')->where('active', true)->where('id', '!=', $service->plan_id)->orderBy('sort')->get()
+        $plans = Plan::query()->with('prices')->where('active', true)->where('id', '!=', $service->plan_id)->where('category', $service->plan->category)->orderBy('sort')->get()
             ->filter(fn (Plan $p) => $p->price($service->currency, $service->period_months))
             ->map(fn (Plan $p) => Present::plan($p, $service->currency))->values();
 

@@ -40,8 +40,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => Setting::get('company_name') ?: config('app.name'),
+            'company_url' => Setting::get('company_url'),
+            'logo' => Setting::get('logo_url') ?: '/brand/raptor-icon-128.webp',
             'auth' => [
-                'user' => $request->user() ? array_merge($request->user()->only(['id', 'name', 'email', 'email_verified_at', 'created_at']), Present::user($request->user())) : null,
+                'user' => $request->user() ? array_merge($request->user()->only(['id', 'name', 'email', 'phone', 'email_verified_at', 'created_at']), Present::user($request->user())) : null,
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -36,6 +36,8 @@ class SettingsController extends Controller
             'company_name' => 'required|string|max:191',
             'company_details' => 'nullable|string|max:2000',
             'support_email' => 'nullable|email|max:191',
+            'company_url' => 'nullable|url:https,http|max:191',
+            'logo_url' => 'nullable|string|max:500',
             'currencies' => 'required|array|min:1',
             'currencies.*' => 'in:'.implode(',', Currency::codes()),
             'panel_url' => 'nullable|url:https,http|max:500',

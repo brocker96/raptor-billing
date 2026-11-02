@@ -8,13 +8,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [Client\ShopController::class, 'index'])->name('shop');
 
+Route::get('checkout/{plan:slug}', [Client\CheckoutController::class, 'show'])->name('checkout');
+Route::post('checkout/{plan:slug}/quote', [Client\CheckoutController::class, 'quote'])->middleware('throttle:30,1')->name('checkout.quote');
+Route::post('checkout/{plan:slug}', [Client\CheckoutController::class, 'store'])->middleware('throttle:6,1')->name('checkout.store');
+
 Route::post('/webhooks/monopay', Webhooks\MonoPayController::class)->name('webhooks.monopay');
 Route::post('/webhooks/raptor', Webhooks\RaptorController::class)->name('webhooks.raptor');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Accounts made at checkout confirm their email through the password link, so the client
+// area does not wait for a separate verification.
+Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', Client\DashboardController::class)->name('dashboard');
 
-    Route::get('order/{plan:slug}', [Client\ShopController::class, 'order'])->name('order');
+    Route::get('order/{plan:slug}', fn (\App\Models\Plan $plan) => redirect()->route('checkout', [$plan] + request()->query()))->name('order');
     Route::post('order/{plan:slug}/quote', [Client\ShopController::class, 'quote'])->name('order.quote');
     Route::post('order/{plan:slug}', [Client\ShopController::class, 'place'])->middleware('throttle:10,1')->name('order.place');
 

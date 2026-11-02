@@ -34,15 +34,15 @@ export default function Profile(
 
     return (
         <>
-            <Head title="Profile settings" />
+            <Head title="Профіль" />
 
-            <h1 className="sr-only">Profile settings</h1>
+            <h1 className="sr-only">Профіль</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile"
-                    description="Update your name and email address"
+                    title="Профіль"
+                    description="Ваше ім'я, пошта та телефон"
                 />
 
                 <Form
@@ -55,7 +55,7 @@ export default function Profile(
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                                <Label htmlFor="name">Прізвище та ім'я</Label>
 
                                 <Input
                                     id="name"
@@ -64,7 +64,7 @@ export default function Profile(
                                     name="name"
                                     required
                                     autoComplete="name"
-                                    placeholder="Full name"
+                                    placeholder="Шевченко Тарас"
                                 />
 
                                 <InputError
@@ -74,7 +74,7 @@ export default function Profile(
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                                <Label htmlFor="email">Пошта</Label>
 
                                 <Input
                                     id="email"
@@ -84,12 +84,33 @@ export default function Profile(
                                     name="email"
                                     required
                                     autoComplete="username"
-                                    placeholder="Email address"
+                                    placeholder="email@example.com"
                                 />
 
                                 <InputError
                                     className="mt-2"
                                     message={errors.email}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="phone">Телефон</Label>
+                                <Input
+                                    id="phone"
+                                    type="tel"
+                                    className="mt-1 block w-full"
+                                    defaultValue={
+                                        (auth.user as { phone?: string })
+                                            .phone ?? ''
+                                    }
+                                    name="phone"
+                                    required
+                                    autoComplete="tel"
+                                    placeholder="+380 50 123 45 67"
+                                />
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.phone}
                                 />
                             </div>
 
@@ -112,8 +133,8 @@ export default function Profile(
                                         {status ===
                                             'verification-link-sent' && (
                                             <div className="mt-2 text-sm font-medium text-green-600">
-                                                A new verification link has been
-                                                sent to your email address.
+                                                Нове посилання надіслано sent to
+                                                your email address.
                                             </div>
                                         )}
                                     </div>
@@ -125,7 +146,7 @@ export default function Profile(
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    Зберегти
                                 </Button>
                             </div>
                         </>
@@ -141,7 +162,7 @@ export default function Profile(
 Profile.layout = {
     breadcrumbs: [
         {
-            title: 'Profile settings',
+            title: 'Профіль',
             href: edit(),
         },
     ],
