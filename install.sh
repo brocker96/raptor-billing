@@ -29,6 +29,10 @@
 #   BILLING_RELEASE         Install a pre-built release, "latest" or a tag such as "v0.1.0".
 #   BILLING_DIR             Install directory (default: /var/www/billing).
 #   BILLING_YES=1           Do not ask anything, take the defaults.
+#
+# For a private repository clone it first and start the copy, the installer then uses those files:
+#   git clone https://<token>@github.com/brocker96/raptor-billing.git /root/raptor-billing
+#   bash /root/raptor-billing/install.sh
 
 set -Eeuo pipefail
 
@@ -241,7 +245,13 @@ ok "Database 'billing' with its own user (separate from the Panel)"
 
 step "Downloading Raptor Billing"
 mkdir -p "$DIR"
-if [[ -n "$RELEASE" ]]; then
+# Started from a downloaded copy (git clone, private repository): install that copy.
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
+if [[ -z "$RELEASE" && -f "$SOURCE_DIR/artisan" && -f "$SOURCE_DIR/config/billing.php" && "$SOURCE_DIR" != "$DIR" ]]; then
+    run cp -a "$SOURCE_DIR/." "$DIR/"
+    rm -rf "$DIR/.git" "$DIR/node_modules" "$DIR/vendor"
+    ok "Local copy from $SOURCE_DIR"
+elif [[ -n "$RELEASE" ]]; then
     if [[ "$RELEASE" == "latest" ]]; then
         BASE="https://github.com/$REPO/releases/latest/download"
     else
