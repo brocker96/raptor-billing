@@ -12,7 +12,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -20,7 +20,7 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -52,7 +52,7 @@ jobs:
           awk -v head="## ${GITHUB_REF_NAME}" '$0 == head || index($0, head " ") == 1 { found = 1; next } found && /^## / { exit } found' CHANGELOG.md > RELEASE_NOTES.md || true
           [ -s RELEASE_NOTES.md ] || echo "Raptor Billing ${GITHUB_REF_NAME}" > RELEASE_NOTES.md
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           draft: true
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
